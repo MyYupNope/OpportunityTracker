@@ -18,6 +18,9 @@
 - **Local Testing Environment**:
   - Always automatically launch a local test environment server (`node serve.js` or `npm run serve`) after applying any code changes so the user can manually evaluate before approving.
 
+- **Strict Workspace Boundary**:
+  - All tool executions, terminal commands, file reads, edits, searches, and validations MUST operate strictly within the root directory of this workspace (`C:\Coding\OpportunityTracker`). Never inspect, search, modify, or execute commands in external directories outside this project root.
+
 - **Architecture & Code Guidelines**:
   - **Technology**: Vanilla JavaScript (ES Modules), HTML5, Bootstrap 5, Chart.js, CSS3.
   - **Zero Build**: Do not add unnecessary bundlers or transpilation steps unless explicitly requested.
