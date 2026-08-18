@@ -11,22 +11,34 @@ It pairs a responsive web dashboard with real-time Google Sheets CSV synchroniza
 
 ## 🌟 Key Features
 
-- **Real-Time Data Synchronization**: Seamlessly pulls and parses tabular application records directly from Google Sheets with in-memory caching and offline fallback.
-- **Interactive Analytics & Metrics**:
-  - Funnel & status distribution charts powered by **Chart.js**.
-  - Monthly application velocity & trends.
-  - Active vs. archived vs. rejected opportunity breakdown.
-- **Advanced Filtering & Faceted Search**:
-  - Multi-attribute faceted filter system (Status, Location / Work Modality, Role Type, Date range).
-  - Instant text search across company names, roles, notes, and tags.
+- **Interactive Kanban Board**:
+  - 5 dynamic pipeline stages (*Ready*, *Applied*, *Interviewed*, *Offered/Accepted*, *Rejected/Withdrawn*).
+  - Drag-and-drop status transitions with optimistic UI updates and automatic rollback on network failure.
+  - Single-click deletion requests with confirmation guards for unsent/draft applications.
+- **Real-Time Data Synchronization**:
+  - Direct HTTP streaming and client-side CSV parsing of Google Sheets records.
+  - Offline-first encrypted `localStorage` cache with 24-hour TTL and smart 15-minute tab-switch sync.
 - **Detailed Opportunity Drawer**:
-  - Rich Markdown rendering for interview prep notes and stage debriefs.
-  - Status progression stepper.
-  - Salary, contact details, job description, and custom notes.
-- **Direct Webhook Actions**:
-  - Asynchronous webhook integration with `n8n` for adding applications, updating notes, and triggering deletion flows.
-- **Dark & Light Mode**: Seamless theme switching with persistent local storage preferences and zero-flicker load state.
-- **Zero-Build Architecture**: Built entirely with Vanilla JavaScript (ES Modules), HTML5, Bootstrap 5, and CSS3 — requires no transpilation step.
+  - Modular tabs for *Overview*, *Job Details*, *Preparation*, and *Notes*.
+  - AI Suitability scoring (1–5 scale) with breakdown of recruiter verdicts, strengths, and critical concerns.
+  - Specialized Microsoft Word-ready HTML copy exporter with clean native table styling.
+  - Live markdown rendering for company briefs and interview preparation notes.
+- **Interactive Analytics & Metrics**:
+  - Visual metrics and distributions powered by **Chart.js** (Cumulative Submissions, Status Split, Job Suitability, Top/Worst Companies).
+  - Weekly vs. Yearly (YTD) dashboard range toggle.
+  - Conversion rates, active pipeline counts, and velocity metrics.
+- **Faceted Multi-Attribute Filtering**:
+  - Instant faceted dropdown filtering by **Company Name**, **Job Title**, and **Application Status**.
+  - Accessible keyboard navigation (Arrow keys, Enter, Escape) with real-time search.
+- **Interactive Landing Page**:
+  - Dynamic canvas particle physics network responding to theme changes.
+  - Bento grid showcase cards linking to core workspaces and the interactive resume.
+- **Direct Webhook Automation**:
+  - Asynchronous webhook integration with `n8n` for adding new opportunities, updating notes, and triggering deletions.
+- **Dark & Light Mode**:
+  - Seamless theme switching with persistent local storage preferences and zero-flicker inline detection.
+- **Zero-Build Architecture**:
+  - Pure native Vanilla JavaScript (ES Modules), HTML5, Bootstrap 5, and CSS3 — requires no bundlers or transpilation step.
 
 ---
 
@@ -60,24 +72,25 @@ It pairs a responsive web dashboard with real-time Google Sheets CSV synchroniza
 
 ```
 OpportunityTracker/
-├── assets/                  # Application graphics, screenshots, avatars, favicon
+├── assets/                  # Application graphics, screenshots, favicon
 ├── css/
 │   └── styles.css           # Core stylesheet & design system variables
 ├── documentation/           # Architecture diagrams, review reports, and process flows
-├── introduction/            # Reference CV and introduction assets
+├── introduction/            # Reference CV data and profile media
 ├── js/
-│   ├── app.js               # Main application orchestration & UI event handling
+│   ├── app.js               # Main application orchestration, Kanban, & drawer logic
 │   ├── Charts.js            # Chart.js visualizations & stats calculation
-│   ├── Config.js            # Endpoint configuration & proxy resolution
-│   ├── FacetedSelect.js     # Custom faceted dropdown & multi-select component
-│   ├── FormApp.js           # Opportunity submission & validation modal logic
-│   ├── Markdown.js          # In-app Markdown parsing & rendering
-│   ├── State.js             # Reactive application state store
+│   ├── Config.js            # Base64-encoded endpoints & proxy configuration
+│   ├── FacetedSelect.js     # Custom faceted dropdown & search component
+│   ├── FormApp.js           # New Application submission form & draft autosave
+│   ├── Markdown.js          # In-app Markdown parser with LRU cache
+│   ├── State.js             # Global application state store
 │   ├── Toast.js             # Floating UI notifications
-│   └── Utils.js             # Formatting, sanitization, & DOM helpers
+│   └── Utils.js             # Formatting, sanitization, encryption, & DOM helpers
 ├── index.html               # Main Single Page Application entrypoint
 ├── package.json             # NPM package scripts & configuration
 ├── serve.js                 # Standalone local HTTP dev server
+├── LICENSE                  # MIT License
 ├── .gitignore               # Git ignored patterns
 └── README.md                # Project documentation
 ```
@@ -112,4 +125,4 @@ To enable GitHub Pages in your repository settings:
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](LICENSE).

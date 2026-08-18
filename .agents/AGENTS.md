@@ -10,9 +10,10 @@
 - **Git Commits & Live Deployment ("commit")**:
   - Never commit or push code until the user has manually tested and explicitly approved the changes.
   - Whenever the user requests a **"commit"** (or deploy), automatically:
-    1. Stage all changes (`git add .`)
-    2. Commit with a clear semantic message (`git commit -m "..."`)
-    3. Push to `origin main` (`git push origin main`), which triggers automated GitHub Pages deployment via GitHub Actions (`.github/workflows/deploy.yml`).
+    1. Review and sync `README.md` (ensuring listed features, directory structure tree, assets, and configurations reflect the latest changes).
+    2. Stage all changes (`git add .`)
+    3. Commit with a clear semantic message (`git commit -m "..."`)
+    4. Push to `origin main` (`git push origin main`), which triggers automated GitHub Pages deployment via GitHub Actions (`.github/workflows/deploy.yml`).
 
 - **Local Testing Environment**:
   - Always automatically launch a local test environment server (`node serve.js` or `npm run serve`) after applying any code changes so the user can manually evaluate before approving.
