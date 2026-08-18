@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = __dirname;
-const PORT = process.env.PORT || 8080;
+let defaultPort = parseInt(process.env.PORT || '8080', 10);
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -78,6 +78,20 @@ const server = http.createServer((req, res) => {
   fs.createReadStream(fsPath).pipe(res);
 });
 
-server.listen(PORT, () => {
-  console.log(`Opportunity Tracker dev server running at: http://localhost:${PORT}`);
+function startServer(port) {
+  server.listen(port, () => {
+    console.log(`Opportunity Tracker dev server running at: http://localhost:${port}`);
+  });
+}
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.log(`Port ${defaultPort} is in use, trying port ${defaultPort + 1}...`);
+    defaultPort += 1;
+    startServer(defaultPort);
+  } else {
+    console.error('Server error:', err);
+  }
 });
+
+startServer(defaultPort);
