@@ -1,0 +1,21 @@
+{
+  "name": "opportunity-tracker",
+  "version": "1.0.0",
+  "description": "Premium Single Page Application for tracking, filtering, and managing job opportunities with Google Sheets & n8n integration.",
+  "main": "serve.js",
+  "scripts": {
+    "start": "node serve.js",
+    "serve": "node serve.js",
+    "dev": "node serve.js"
+  },
+  "keywords": [
+    "job-tracker",
+    "dashboard",
+    "opportunity-tracker",
+    "vanilla-js",
+    "bootstrap5",
+    "chartjs"
+  ],
+  "author": "Rodrigo Matias",
+  "license": "MIT"
+}
