@@ -229,7 +229,6 @@ function initDomCache() {
   dom.sectionSuitabilityEval = document.getElementById('sectionSuitabilityEval');
   dom.drawerStatusSelect = document.getElementById('drawerStatusSelect');
   dom.drawerCommentsTextarea = document.getElementById('drawerCommentsTextarea');
-  dom.sectionComments = document.getElementById('sectionComments');
   dom.drawerJobDescription = document.getElementById('drawerJobDescription');
   dom.drawerCompanyDescription = document.getElementById('drawerCompanyDescription');
   dom.drawerlinkJobUrl = document.getElementById('drawerlinkJobUrl');
@@ -240,7 +239,6 @@ function initDomCache() {
 
   dom.filtersSection = document.querySelector('.filters-section');
   dom.applicationsSection = document.getElementById('applicationsSection');
-  dom.applicationsSectionHeader = document.getElementById('applicationsSectionHeader');
   dom.statsSection = document.querySelector('.stats-section');
   dom.analyticsSection = document.querySelector('.analytics-section');
   dom.newApplicationSection = document.querySelector('.new-application-section');
@@ -250,7 +248,6 @@ function initDomCache() {
   dom.fabBtn = document.getElementById('fabNewApplication');
   dom.refreshBtn = document.getElementById('btnHeaderRefresh');
   dom.syncContainer = document.querySelector('.sync-container');
-  dom.heroBanner = document.querySelector('.hero-banner');
   dom.topbarBrandLink = document.getElementById('topbarBrandLink');
   dom.landingTabContent = document.getElementById('landingTabContent');
 
@@ -662,17 +659,13 @@ function setupEventListeners() {
   setupKanbanDragAndDrop();
 
   // Copy all Preparation content button
-  const btnCopyPrep = document.getElementById('btnCopyPreparation');
+  const btnCopyPrep = dom.btnCopyPreparation;
   if (btnCopyPrep) {
     btnCopyPrep.addEventListener('click', () => {
       const target = document.querySelector('.preparation-card');
       copyElementHtml(btnCopyPrep, target);
     });
   }
-}
-
-function CACHE_KEY_CSV() {
-  return CSV_CACHE_KEY;
 }
 
 
@@ -691,7 +684,7 @@ function writeCacheIdle(csvText) {
     try {
       const encryptedCsv = encryptCacheData(csvText);
       const newCache = { csv: encryptedCsv, encrypted: true, timestamp: Date.now() };
-      localStorage.setItem(CACHE_KEY_CSV(), JSON.stringify(newCache));
+      localStorage.setItem(CSV_CACHE_KEY, JSON.stringify(newCache));
     } catch (e) {
       console.warn('[OpportunityTracker] Failed to write cache to localStorage:', e);
     }
@@ -711,7 +704,7 @@ function fetchData(isTabSwitch = false, isForceRefresh = false, onComplete = nul
     if (typeof onComplete === 'function') onComplete(ok);
   };
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
-  const cachedVal = localStorage.getItem(CACHE_KEY_CSV());
+  const cachedVal = localStorage.getItem(CSV_CACHE_KEY);
   let cachedCsvText = null;
   let hasLoadedFromCache = false;
   let lastSyncTimeMs = null;
@@ -743,7 +736,7 @@ function fetchData(isTabSwitch = false, isForceRefresh = false, onComplete = nul
       hasLoadedFromCache = true;
     } catch (e) {
       console.error('[OpportunityTracker] Failed parsing cached CSV:', e);
-      localStorage.removeItem(CACHE_KEY_CSV());
+      localStorage.removeItem(CSV_CACHE_KEY);
     }
   }
 
@@ -824,7 +817,7 @@ function fetchData(isTabSwitch = false, isForceRefresh = false, onComplete = nul
       if (hasLoadedFromCache) {
         let cachedObj = {};
         try {
-          cachedObj = JSON.parse(localStorage.getItem(CACHE_KEY_CSV()) || '{}');
+          cachedObj = JSON.parse(localStorage.getItem(CSV_CACHE_KEY) || '{}');
         } catch (e) {}
         const syncTime = cachedObj.timestamp
           ? new Date(cachedObj.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
@@ -1614,7 +1607,7 @@ async function updateApplicationStatusDirect(app, newStatus, targetContainer, ca
           }
         }
         // Invalidate cache to force a fresh pull from Google Sheets database
-        try { localStorage.removeItem(CACHE_KEY_CSV()); } catch (e) {}
+        try { localStorage.removeItem(CSV_CACHE_KEY); } catch (e) {}
 
         setTimeout(() => {
           fetchData(false, true, (ok) => {
@@ -1730,7 +1723,7 @@ async function deleteApplication(app, cardEl) {
         updatePersistentToast(toastId, 'Application deleted successfully!', 'success');
 
         // Invalidate cache and force a fresh database refresh to reconcile.
-        try { localStorage.removeItem(CACHE_KEY_CSV()); } catch (e) {}
+        try { localStorage.removeItem(CSV_CACHE_KEY); } catch (e) {}
 
         new Promise((resolve) => fetchData(false, true, resolve)).then((refreshOk) => {
           if (refreshOk !== false) {
@@ -1968,7 +1961,7 @@ function openDetailsDrawer(app) {
     if (dom.btnCopyPreparation) dom.btnCopyPreparation.style.display = '';
 
     // --- A) Company Introduction ---
-    const companyEl = document.getElementById('drawerInterviewCompany');
+    const companyEl = dom.drawerInterviewCompany;
     const companyNoData = document.getElementById('prepNoDataCompany');
     if (interviewCompany) {
       if (companyEl) companyEl.innerHTML = parseMarkdown(interviewCompany);
@@ -2018,7 +2011,7 @@ function openDetailsDrawer(app) {
     }
 
     // --- C) Interview Preparation ---
-    const prepEl = document.getElementById('drawerInterviewPreparation');
+    const prepEl = dom.drawerInterviewPreparation;
     const prepNoData = document.getElementById('prepNoDataInterview');
     if (interviewPrep) {
       if (prepEl) prepEl.innerHTML = parseMarkdown(interviewPrep);
@@ -2135,21 +2128,13 @@ function closeDetailsDrawer() {
 
 function showEl(el) {
   if (!el) return;
-  if (el._hideTimeout) {
-    clearTimeout(el._hideTimeout);
-    el._hideTimeout = null;
-  }
-  el.classList.remove('tab-hidden', 'tab-exit', 'tab-enter');
+  el.classList.remove('tab-hidden');
   el.classList.add('tab-fade-in');
 }
 
 function hideEl(el) {
   if (!el) return;
-  if (el._hideTimeout) {
-    clearTimeout(el._hideTimeout);
-    el._hideTimeout = null;
-  }
-  el.classList.remove('tab-fade-in', 'tab-enter', 'tab-exit');
+  el.classList.remove('tab-fade-in');
   el.classList.add('tab-hidden');
 }
 
@@ -2210,7 +2195,6 @@ function initTabNavigation() {
 
     if (targetTab === 'landing') {
       showEl(dom.landingTabContent);
-      hideEl(dom.heroBanner);
       hideEl(dom.filtersSection);
       hideEl(dom.applicationsSection);
       hideEl(dom.syncContainer);
@@ -2226,7 +2210,6 @@ function initTabNavigation() {
       window._landingParticles.start();
     } else if (targetTab === 'home') {
       hideEl(dom.landingTabContent);
-      hideEl(dom.heroBanner);
       showEl(dom.filtersSection);
       showEl(dom.applicationsSection);
       showEl(dom.syncContainer);
@@ -2238,7 +2221,6 @@ function initTabNavigation() {
       hideEl(dom.globalDashboardRangeContainer);
     } else if (targetTab === 'dashboard') {
       hideEl(dom.landingTabContent);
-      hideEl(dom.heroBanner);
       hideEl(dom.filtersSection);
       hideEl(dom.applicationsSection);
       showEl(dom.syncContainer);
@@ -2259,7 +2241,6 @@ function initTabNavigation() {
       }
     } else if (targetTab === 'new-application') {
       hideEl(dom.landingTabContent);
-      hideEl(dom.heroBanner);
       hideEl(dom.filtersSection);
       hideEl(dom.applicationsSection);
       hideEl(dom.syncContainer);
