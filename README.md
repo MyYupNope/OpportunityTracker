@@ -3,7 +3,7 @@
 [![Deploy to GitHub Pages](https://github.com/MyYupNope/OpportunityTracker/actions/workflows/deploy.yml/badge.svg)](https://github.com/MyYupNope/OpportunityTracker/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**Opportunity Tracker** is a client-side Single Page Application (SPA) designed to track, organize, analyze, and manage job applications throughout the entire interview lifecycle.
+**Opportunity Tracker** is a personal client-side Single Page Application (SPA) designed to track, organize, analyze, and manage job applications throughout the entire interview lifecycle.
 
 It pairs a responsive web dashboard with real-time Google Sheets CSV synchronization and private `n8n` automation webhooks for AI-assisted note processing and status synchronization.
 
@@ -32,39 +32,13 @@ It pairs a responsive web dashboard with real-time Google Sheets CSV synchroniza
   - Accessible keyboard navigation (Arrow keys, Enter, Escape) with real-time search.
 - **Interactive Landing Page**:
   - Dynamic canvas particle physics network responding to theme changes.
-  - Bento grid showcase cards linking to core workspaces and the interactive resume.
+  - Bento grid showcase cards linking to core workspaces and the interactive resume showcase.
 - **Direct Webhook Automation**:
-  - Asynchronous webhook integration with `n8n` for adding new opportunities, updating notes, and triggering deletions.
+  - Asynchronous webhook integration with private `n8n` automation workflows for adding new opportunities, updating notes, and triggering deletions.
 - **Dark & Light Mode**:
   - Seamless theme switching with persistent local storage preferences and zero-flicker inline detection.
 - **Zero-Build Architecture**:
   - Pure native Vanilla JavaScript (ES Modules), HTML5, Bootstrap 5, and CSS3 — requires no bundlers or transpilation step.
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v18+ recommended) or any static file server.
-
-### Local Development
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/MyYupNope/OpportunityTracker.git
-   cd OpportunityTracker
-   ```
-
-2. Start the local development server:
-   ```bash
-   npm start
-   ```
-
-3. Open your browser and navigate to:
-   ```
-   http://localhost:8080
-   ```
 
 ---
 
@@ -97,29 +71,12 @@ OpportunityTracker/
 
 ---
 
-## ⚙️ Configuration
+## 🛠️ Architecture & Tech Stack
 
-Application endpoints can be customized dynamically using `window.APP_CONFIG` in `index.html` or configured via `js/Config.js`:
-
-```javascript
-window.APP_CONFIG = {
-  SHEET_EXPORT_URL: "https://docs.google.com/spreadsheets/d/.../export?format=csv",
-  FORM_API_ENDPOINT: "https://your-n8n-instance/webhook/new-opportunity",
-  NOTES_API_ENDPOINT: "https://your-n8n-instance/webhook/update-notes",
-  DELETE_API_ENDPOINT: "https://your-n8n-instance/webhook/delete-opportunity"
-};
-```
-
----
-
-## 🚢 Deployment
-
-The repository includes a GitHub Actions workflow located at `.github/workflows/deploy.yml` configured to automatically deploy the application to GitHub Pages whenever changes are pushed to the `main` branch.
-
-To enable GitHub Pages in your repository settings:
-1. Navigate to **Settings** > **Pages** in GitHub.
-2. Under **Build and deployment** > **Source**, select **GitHub Actions**.
-3. Push to `main` to trigger the automated build and deployment.
+- **Frontend**: Vanilla JavaScript (ES6+ Modules), HTML5, Bootstrap 5, Chart.js, CSS3
+- **Data Persistence**: Google Sheets (read path via published CSV feed) & Encrypted `localStorage` cache
+- **Backend Automation**: Self-hosted `n8n` webhooks with AI evaluation engine (suitability scoring & interview preparation generation)
+- **Hosting & CI/CD**: Automated deployment to GitHub Pages via GitHub Actions (`.github/workflows/deploy.yml`)
 
 ---
 
