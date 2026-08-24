@@ -21,6 +21,7 @@ import {
   CSV_CACHE_KEY,
   DELETE_TIMEOUT_MS
 } from './Config.js';
+import { getCache, setCache, deleteCache } from './Storage.js';
 
 const sortCollator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true });
 
@@ -680,13 +681,13 @@ function setSyncState(status, message) {
 }
 
 function writeCacheIdle(csvText) {
-  const saveAction = () => {
+  const saveAction = async () => {
     try {
       const encryptedCsv = encryptCacheData(csvText);
       const newCache = { csv: encryptedCsv, encrypted: true, timestamp: Date.now() };
-      localStorage.setItem(CSV_CACHE_KEY, JSON.stringify(newCache));
+      await setCache(CSV_CACHE_KEY, newCache);
     } catch (e) {
-      console.warn('[OpportunityTracker] Failed to write cache to localStorage:', e);
+      console.warn('[OpportunityTracker] Failed to write cache to IndexedDB:', e);
     }
   };
   if ('requestIdleCallback' in window) {
@@ -697,21 +698,35 @@ function writeCacheIdle(csvText) {
 }
 
 /**
- * Fetch and Parse Data with offline Local Storage support
+ * Fetch and Parse Data with offline IndexedDB storage support
  */
-function fetchData(isTabSwitch = false, isForceRefresh = false, onComplete = null) {
+async function fetchData(isTabSwitch = false, isForceRefresh = false, onComplete = null) {
   const emitComplete = (ok) => {
     if (typeof onComplete === 'function') onComplete(ok);
   };
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
-  const cachedVal = localStorage.getItem(CSV_CACHE_KEY);
+  let cachedVal = null;
+  try {
+    cachedVal = await getCache(CSV_CACHE_KEY);
+  } catch (e) {
+    console.warn('[OpportunityTracker] Failed to read cache from IndexedDB:', e);
+  }
+
   let cachedCsvText = null;
   let hasLoadedFromCache = false;
   let lastSyncTimeMs = null;
 
   if (cachedVal) {
     try {
-      const cachedObj = JSON.parse(cachedVal);
+      let cachedObj = cachedVal;
+      if (typeof cachedVal === 'string') {
+        try {
+          cachedObj = JSON.parse(cachedVal);
+        } catch (e) {
+          cachedObj = null;
+        }
+      }
+
       if (cachedObj && typeof cachedObj === 'object' && cachedObj.csv && cachedObj.timestamp) {
         lastSyncTimeMs = parseCacheTimestamp(cachedObj.timestamp);
         if (Date.now() - cachedObj.timestamp < CACHE_TTL_MS) {
@@ -736,7 +751,7 @@ function fetchData(isTabSwitch = false, isForceRefresh = false, onComplete = nul
       hasLoadedFromCache = true;
     } catch (e) {
       console.error('[OpportunityTracker] Failed parsing cached CSV:', e);
-      localStorage.removeItem(CSV_CACHE_KEY);
+      deleteCache(CSV_CACHE_KEY);
     }
   }
 
@@ -775,7 +790,7 @@ function fetchData(isTabSwitch = false, isForceRefresh = false, onComplete = nul
       let cachedPlainText = cachedCsvText;
       if (!cachedPlainText && cachedVal) {
         try {
-          const parsed = JSON.parse(cachedVal);
+          const parsed = typeof cachedVal === 'object' ? cachedVal : JSON.parse(cachedVal);
           if (parsed && parsed.csv) {
             cachedPlainText = parsed.encrypted ? decryptCacheData(parsed.csv) : parsed.csv;
           }
@@ -815,12 +830,8 @@ function fetchData(isTabSwitch = false, isForceRefresh = false, onComplete = nul
       }
       console.error('[OpportunityTracker] Fetch error:', error);
       if (hasLoadedFromCache) {
-        let cachedObj = {};
-        try {
-          cachedObj = JSON.parse(localStorage.getItem(CSV_CACHE_KEY) || '{}');
-        } catch (e) {}
-        const syncTime = cachedObj.timestamp
-          ? new Date(cachedObj.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+        const syncTime = (cachedVal && typeof cachedVal === 'object' && cachedVal.timestamp)
+          ? new Date(cachedVal.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
           : 'Cached';
         setSyncState('success', `Offline (${syncTime})`);
       } else {
@@ -1607,7 +1618,7 @@ async function updateApplicationStatusDirect(app, newStatus, targetContainer, ca
           }
         }
         // Invalidate cache to force a fresh pull from Google Sheets database
-        try { localStorage.removeItem(CSV_CACHE_KEY); } catch (e) {}
+        deleteCache(CSV_CACHE_KEY);
 
         setTimeout(() => {
           fetchData(false, true, (ok) => {
@@ -1723,7 +1734,7 @@ async function deleteApplication(app, cardEl) {
         updatePersistentToast(toastId, 'Application deleted successfully!', 'success');
 
         // Invalidate cache and force a fresh database refresh to reconcile.
-        try { localStorage.removeItem(CSV_CACHE_KEY); } catch (e) {}
+        deleteCache(CSV_CACHE_KEY);
 
         new Promise((resolve) => fetchData(false, true, resolve)).then((refreshOk) => {
           if (refreshOk !== false) {

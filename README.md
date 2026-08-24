@@ -17,7 +17,7 @@ It pairs a responsive web dashboard with real-time Google Sheets CSV synchroniza
   - Single-click deletion requests with confirmation guards for unsent/draft applications.
 - **Real-Time Data Synchronization**:
   - Direct HTTP streaming and client-side CSV parsing of Google Sheets records.
-  - Offline-first encrypted `localStorage` cache with 24-hour TTL and smart 15-minute tab-switch sync.
+  - High-capacity, offline-first encrypted native `IndexedDB` cache (`OpportunityTrackerDB`) with 24-hour TTL, smart 15-minute tab-switch sync, and automatic legacy `localStorage` migration.
 - **Detailed Opportunity Drawer**:
   - Modular tabs for *Overview*, *Job Details*, *Preparation*, and *Notes*.
   - AI Suitability scoring (1–5 scale) with breakdown of recruiter verdicts, strengths, and critical concerns.
@@ -59,8 +59,12 @@ OpportunityTracker/
 │   ├── FormApp.js           # New Application submission form & draft autosave
 │   ├── Markdown.js          # In-app Markdown parser with LRU cache
 │   ├── State.js             # Global application state store
+│   ├── Storage.js           # Native IndexedDB persistent caching layer
 │   ├── Toast.js             # Floating UI notifications
 │   └── Utils.js             # Formatting, sanitization, encryption, & DOM helpers
+├── tests/
+│   ├── index.html           # In-browser interactive test suite runner
+│   └── test-storage-node.mjs# Headless Node.js storage & quota test suite
 ├── index.html               # Main Single Page Application entrypoint
 ├── package.json             # NPM package scripts & configuration
 ├── serve.js                 # Standalone local HTTP dev server
@@ -74,7 +78,7 @@ OpportunityTracker/
 ## 🛠️ Architecture & Tech Stack
 
 - **Frontend**: Vanilla JavaScript (ES6+ Modules), HTML5, Bootstrap 5, Chart.js, CSS3
-- **Data Persistence**: Google Sheets (read path via published CSV feed) & Encrypted `localStorage` cache
+- **Data Persistence**: Google Sheets (read path via published CSV feed) & Encrypted native `IndexedDB` cache
 - **Backend Automation**: Self-hosted `n8n` webhooks with AI evaluation engine (suitability scoring & interview preparation generation)
 - **Hosting & CI/CD**: Automated deployment to GitHub Pages via GitHub Actions (`.github/workflows/deploy.yml`)
 

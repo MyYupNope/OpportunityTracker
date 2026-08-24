@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpportunityTracker — Storage & IndexedDB Test Suite</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: #0b0f19;
+      color: #e2e8f0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 2.5rem 1rem;
+    }
+    .test-card {
+      background: #151d30;
+      border: 1px solid #23314e;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      transition: all 0.2s ease;
+    }
+    .test-card.pass {
+      border-left: 5px solid #10b981;
+    }
+    .test-card.fail {
+      border-left: 5px solid #ef4444;
+    }
+    .test-card.running {
+      border-left: 5px solid #3b82f6;
+    }
+    .badge-status {
+      font-size: 0.85rem;
+      padding: 0.35em 0.75em;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .code-box {
+      background: #090d16;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      padding: 0.75rem;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.82rem;
+      color: #94a3b8;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    .summary-card {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.75rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width: 900px;">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h2 class="fw-bold mb-1" style="font-family: 'Space Grotesk', sans-serif;">IndexedDB Verification Suite</h2>
+        <p class="text-secondary mb-0">OpportunityTracker Native Storage & Quota Resilience Test Suite</p>
+      </div>
+      <button class="btn btn-primary px-4 fw-semibold" id="btnRunTests" onclick="runAllTests()">
+        <span id="btnIcon">▶</span> Run All Tests
+      </button>
+    </div>
+
+    <!-- Summary Box -->
+    <div class="summary-card mb-4 d-flex align-items-center justify-content-between">
+      <div>
+        <div class="text-secondary small text-uppercase fw-bold mb-1">Execution Status</div>
+        <h4 class="mb-0 fw-bold" id="overallStatus">Ready to execute</h4>
+      </div>
+      <div class="d-flex gap-4 text-center">
+        <div>
+          <div class="text-secondary small">Total</div>
+          <div class="fs-4 fw-bold" id="totalCount">6</div>
+        </div>
+        <div>
+          <div class="text-success small">Passed</div>
+          <div class="fs-4 fw-bold text-success" id="passedCount">0</div>
+        </div>
+        <div>
+          <div class="text-danger small">Failed</div>
+          <div class="fs-4 fw-bold text-danger" id="failedCount">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test List -->
+    <div id="testContainer"></div>
+
+    <div class="text-center mt-4">
+      <a href="../" class="btn btn-outline-secondary btn-sm">← Back to OpportunityTracker Dashboard</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import { getCache, setCache, deleteCache, clearAllCache } from '../js/Storage.js';
+    import { encryptCacheData, decryptCacheData } from '../js/Utils.js';
+
+    const testDefinitions = [
+      {
+        id: 'tc-1',
+        title: 'TC-01: Native IndexedDB Connection & CRUD',
+        desc: 'Validates writing, reading, deleting, and cache-miss handling directly in the browser IndexedDB store.',
+        run: async () => {
+          const key = 'test_crud_' + Date.now();
+          const payload = { test: true, time: Date.now(), items: [1, 2, 3] };
+          
+          const setOk = await setCache(key, payload);
+          if (!setOk) throw new Error('setCache returned false');
+
+          const readVal = await getCache(key);
+          if (!readVal || readVal.time !== payload.time) {
+            throw new Error('getCache data mismatch: ' + JSON.stringify(readVal));
+          }
+
+          const delOk = await deleteCache(key);
+          if (!delOk) throw new Error('deleteCache returned false');
+
+          const readAfter = await getCache(key);
+          if (readAfter !== null) throw new Error('getCache did not return null after delete');
+
+          return `Successfully performed write, read, and delete on key "${key}"`;
+        }
+      },
+      {
+        id: 'tc-2',
+        title: 'TC-02: High Capacity (>6 MB) Quota Bypass Test',
+        desc: 'Verifies that storing a >6 MB dataset (which crashes localStorage with QuotaExceededError) executes smoothly in IndexedDB.',
+        run: async () => {
+          const largeRow = 'Google,Staff Software Engineer,Interview Scheduled,$240,000,Candidate cleared screening\n';
+          const largeCsv = 'Company,Role,Status,Salary,Notes\n' + largeRow.repeat(70000);
+          const sizeMb = (new Blob([largeCsv]).size / (1024 * 1024)).toFixed(2);
+
+          // Verify localStorage failure
+          let lsError = null;
+          try {
+            localStorage.setItem('__temp_quota_test__', largeCsv);
+          } catch (e) {
+            lsError = e.name;
+          }
+          if (lsError !== 'QuotaExceededError') {
+            throw new Error('Expected localStorage to throw QuotaExceededError for ' + sizeMb + ' MB, got: ' + lsError);
+          }
+
+          // Test IndexedDB storage
+          const start = performance.now();
+          const writeOk = await setCache('test_large_dataset', { csv: largeCsv, timestamp: Date.now() });
+          const writeTime = (performance.now() - start).toFixed(1);
+          if (!writeOk) throw new Error('IndexedDB setCache failed for ' + sizeMb + ' MB payload');
+
+          const readStart = performance.now();
+          const cached = await getCache('test_large_dataset');
+          const readTime = (performance.now() - readStart).toFixed(1);
+
+          if (!cached || cached.csv.length !== largeCsv.length) {
+            throw new Error('Read verification failed for large dataset');
+          }
+
+          await deleteCache('test_large_dataset');
+          return `Validated ${sizeMb} MB payload: localStorage threw QuotaExceededError (as expected), IndexedDB wrote in ${writeTime}ms and read in ${readTime}ms!`;
+        }
+      },
+      {
+        id: 'tc-3',
+        title: 'TC-03: Legacy localStorage Auto-Migration & Cleanup',
+        desc: 'Verifies that legacy localStorage data is automatically retrieved, migrated, and purged from localStorage to free up origin quota.',
+        run: async () => {
+          const testKey = 'legacy_migration_test_key';
+          const legacyObj = { csv: 'Legacy,Data,Row', timestamp: 12345678, encrypted: false };
+          
+          localStorage.setItem(testKey, JSON.stringify(legacyObj));
+          if (!localStorage.getItem(testKey)) throw new Error('Failed to setup legacy localStorage item');
+
+          const retrieved = await getCache(testKey);
+          if (!retrieved || retrieved.csv !== legacyObj.csv) {
+            throw new Error('getCache failed to migrate legacy item');
+          }
+
+          const lsCheck = localStorage.getItem(testKey);
+          if (lsCheck !== null) {
+            throw new Error('Legacy item was not purged from localStorage after migration');
+          }
+
+          return 'Successfully migrated legacy localStorage entry and verified zero remaining quota footprint.';
+        }
+      },
+      {
+        id: 'tc-4',
+        title: 'TC-04: Full Encryption & Decryption Roundtrip in IndexedDB',
+        desc: 'Validates that XOR/Base64 encrypted payloads roundtrip through IndexedDB with zero byte corruption.',
+        run: async () => {
+          const sample = 'Company,Status,Location\nOpenAI,Offer,San Francisco\nAnthropic,Applied,Remote';
+          const encrypted = encryptCacheData(sample);
+          if (encrypted === sample) throw new Error('Encryption failed to scramble text');
+
+          await setCache('test_enc_roundtrip', { csv: encrypted, encrypted: true, timestamp: Date.now() });
+          const dbItem = await getCache('test_enc_roundtrip');
+          
+          const decrypted = decryptCacheData(dbItem.csv);
+          if (decrypted !== sample) throw new Error('Decrypted string does not match original CSV input');
+
+          await deleteCache('test_enc_roundtrip');
+          return 'Encrypted dataset stored in IndexedDB and decrypted with 100% fidelity.';
+        }
+      },
+      {
+        id: 'tc-5',
+        title: 'TC-05: Real Live Google Sheet Cache Simulation',
+        desc: 'Fetches the live 37,000+ row Google Sheet and saves it into IndexedDB, verifying real-world scale.',
+        run: async () => {
+          const sheetUrl = atob('aHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vc3ByZWFkc2hlZXRzL2QvMUxkWG1wOXdBaWxkcVlkUkl5ekEzMkJNTVFJRERNMmtUMjVsTXJnWWVSYmsvZXhwb3J0P2Zvcm1hdD1jc3Y=');
+          const res = await fetch(sheetUrl);
+          if (!res.ok) throw new Error('Network fetch failed');
+          const csvText = await res.text();
+          
+          const sizeKb = (new Blob([csvText]).size / 1024).toFixed(1);
+          const rowCount = csvText.split('\n').filter(r => r.trim()).length;
+
+          const enc = encryptCacheData(csvText);
+          const start = performance.now();
+          await setCache('live_sheet_test', { csv: enc, encrypted: true, timestamp: Date.now() });
+          const duration = (performance.now() - start).toFixed(1);
+
+          const readObj = await getCache('live_sheet_test');
+          const dec = decryptCacheData(readObj.csv);
+          if (dec.length !== csvText.length) throw new Error('Decrypted live sheet size mismatch');
+
+          await deleteCache('live_sheet_test');
+          return `Live Sheet (${rowCount} rows, ${sizeKb} KB) encrypted, saved in ${duration}ms, read & decrypted perfectly.`;
+        }
+      },
+      {
+        id: 'tc-6',
+        title: 'TC-06: Cache Invalidation & Store Reset (clearAllCache)',
+        desc: 'Validates complete store purging and isolated key deletion.',
+        run: async () => {
+          await setCache('k_purge_1', 'val1');
+          await setCache('k_purge_2', 'val2');
+
+          const clearOk = await clearAllCache();
+          if (!clearOk) throw new Error('clearAllCache returned false');
+
+          const v1 = await getCache('k_purge_1');
+          const v2 = await getCache('k_purge_2');
+          if (v1 !== null || v2 !== null) throw new Error('Store was not emptied');
+
+          return 'clearAllCache successfully wiped all items from the IndexedDB store.';
+        }
+      }
+    ];
+
+    function renderUI() {
+      const container = document.getElementById('testContainer');
+      container.innerHTML = testDefinitions.map(t => `
+        <div class="test-card" id="card-${t.id}">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <h5 class="fw-bold mb-0">${t.title}</h5>
+            <span class="badge bg-secondary badge-status" id="badge-${t.id}">Pending</span>
+          </div>
+          <p class="text-secondary small mb-2">${t.desc}</p>
+          <div class="code-box d-none" id="log-${t.id}"></div>
+        </div>
+      `).join('');
+    }
+
+    window.runAllTests = async function() {
+      const btn = document.getElementById('btnRunTests');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Running...';
+
+      let passed = 0;
+      let failed = 0;
+
+      for (const t of testDefinitions) {
+        const card = document.getElementById(`card-${t.id}`);
+        const badge = document.getElementById(`badge-${t.id}`);
+        const logBox = document.getElementById(`log-${t.id}`);
+
+        card.className = 'test-card running';
+        badge.className = 'badge bg-primary badge-status';
+        badge.innerText = 'Running...';
+
+        try {
+          const message = await t.run();
+          card.className = 'test-card pass';
+          badge.className = 'badge bg-success badge-status';
+          badge.innerText = 'PASSED';
+          logBox.className = 'code-box';
+          logBox.innerHTML = `✔ ${message}`;
+          passed++;
+        } catch (err) {
+          card.className = 'test-card fail';
+          badge.className = 'badge bg-danger badge-status';
+          badge.innerText = 'FAILED';
+          logBox.className = 'code-box text-danger';
+          logBox.innerHTML = `✖ Error: ${err.message}`;
+          failed++;
+        }
+
+        document.getElementById('passedCount').innerText = passed;
+        document.getElementById('failedCount').innerText = failed;
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<span>▶</span> Run All Tests Again';
+
+      const overall = document.getElementById('overallStatus');
+      if (failed === 0) {
+        overall.innerText = 'All Tests Passed! (100%)';
+        overall.className = 'mb-0 fw-bold text-success';
+      } else {
+        overall.innerText = `${failed} Tests Failed`;
+        overall.className = 'mb-0 fw-bold text-danger';
+      }
+    };
+
+    renderUI();
+    // Auto-run on page load
+    setTimeout(window.runAllTests, 300);
+  </script>
+</body>
+</html>
