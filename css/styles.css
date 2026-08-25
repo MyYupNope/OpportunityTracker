@@ -84,6 +84,11 @@
   --bg-status-withdraw: #f3e5f5;
   --color-status-withdraw: #ab47bc;
   --bg-invalid: #fce8e6;
+
+  /* Kanban card aging tints (Light Theme) */
+  --age-tint-green: #e6f4ea;
+  --age-tint-amber: #fef7e0;
+  --age-tint-red: #fce8e6;
 }
 
 :root.theme-dark {
@@ -137,6 +142,11 @@
   --bg-status-withdraw: rgba(171, 71, 188, 0.15);
   --color-status-withdraw: #dec9e9;
   --bg-invalid: #301c1c;
+
+  /* Kanban card aging tints (Dark Theme) */
+  --age-tint-green: rgba(126, 203, 147, 0.18);
+  --age-tint-amber: rgba(249, 171, 0, 0.25);
+  --age-tint-red: rgba(217, 48, 37, 0.32);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -4394,6 +4404,18 @@ a.topbar-nav-btn:hover svg {
   box-shadow: var(--shadow-md);
   border-color: var(--color-primary);
   transform: translateY(-2px);
+}
+
+.kanban-card.age-green {
+  background: var(--age-tint-green);
+}
+
+.kanban-card.age-amber {
+  background: var(--age-tint-amber);
+}
+
+.kanban-card.age-red {
+  background: var(--age-tint-red);
 }
 
 .kanban-card.dragging {

@@ -19,7 +19,9 @@ import {
   getNotesApiEndpoint,
   getDeleteApiEndpoint,
   CSV_CACHE_KEY,
-  DELETE_TIMEOUT_MS
+  DELETE_TIMEOUT_MS,
+  AGE_GREEN_LIMIT_DAYS,
+  AGE_RED_LIMIT_DAYS
 } from './Config.js';
 import { getCache, setCache, deleteCache } from './Storage.js';
 
@@ -1255,6 +1257,34 @@ function applyFilters(skipRender = false) {
   }
 }
 
+const AGE_TINT_CLASSES = ['age-green', 'age-amber', 'age-red'];
+
+function computeApplicationAge(parsedDate, now = new Date()) {
+  if (!parsedDate) return null;
+  const start = new Date(parsedDate);
+  if (isNaN(start.getTime())) return null;
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(now);
+  end.setHours(0, 0, 0, 0);
+  const days = Math.max(0, Math.round((end.getTime() - start.getTime()) / 86400000));
+  let level = 'green';
+  if (days >= AGE_RED_LIMIT_DAYS) level = 'red';
+  else if (days >= AGE_GREEN_LIMIT_DAYS) level = 'amber';
+  return { days, level };
+}
+
+function syncCardAgeTint(cardEl, app, colKey) {
+  if (!cardEl) return;
+  AGE_TINT_CLASSES.forEach(cls => cardEl.classList.remove(cls));
+  cardEl.removeAttribute('title');
+  if (colKey === 'Rejected' || !app) return;
+  const ageInfo = computeApplicationAge(app._parsedDate || parseDate((app['Create Date'] || '').trim()));
+  if (ageInfo) {
+    cardEl.classList.add(`age-${ageInfo.level}`);
+    cardEl.title = `Applied ${ageInfo.days}d ago`;
+  }
+}
+
 function renderKanbanBoard() {
   if (dom.resultsCount) {
     dom.resultsCount.textContent = (state.filteredApplications || []).length;
@@ -1353,6 +1383,7 @@ function renderKanbanBoard() {
       card.className = `kanban-card${isDeleting ? ' is-deleting' : ''}`;
       card.setAttribute('draggable', isDeleting ? 'false' : 'true');
       card.setAttribute('data-index', app.originalIndex !== undefined ? app.originalIndex : idx);
+      syncCardAgeTint(card, app, colKey);
 
       card.innerHTML = `
         <div class="kanban-card-top">
@@ -1551,6 +1582,7 @@ async function updateApplicationStatusDirect(app, newStatus, targetContainer, ca
   if (isCrossColumn && cardEl && targetContainer) {
     targetContainer.appendChild(cardEl);
     updateCardDeleteButton(cardEl, app, newColKey);
+    syncCardAgeTint(cardEl, app, newColKey);
     // Re-sort target column cards by creation date (newest first), prioritizing the moved card on date ties
     const cards = Array.from(targetContainer.querySelectorAll('.kanban-card'));
     const appIndexMap = new Map((state.rawApplications || []).map(a => [a.originalIndex, a]));
@@ -1582,6 +1614,7 @@ async function updateApplicationStatusDirect(app, newStatus, targetContainer, ca
     if (isCrossColumn && cardEl && sourceContainer) {
       sourceContainer.appendChild(cardEl);
       updateCardDeleteButton(cardEl, app, oldColKey);
+      syncCardAgeTint(cardEl, app, oldColKey);
       const cards = Array.from(sourceContainer.querySelectorAll('.kanban-card'));
       const appIndexMap = new Map((state.rawApplications || []).map(a => [a.originalIndex, a]));
       sortCardsByDate(cards, el => {

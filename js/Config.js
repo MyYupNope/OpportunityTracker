@@ -72,3 +72,5 @@ export const FORM_TIMEOUT_MS = 300000;
 export const FORM_SUBMISSION_RESET_TIMEOUT = 5000;
 export const CSV_CACHE_KEY = 'talent_tracker_csv_cache';
 export const DELETE_TIMEOUT_MS = 60000;
+export const AGE_GREEN_LIMIT_DAYS = 15;
+export const AGE_RED_LIMIT_DAYS = 30;
