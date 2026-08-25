@@ -1067,12 +1067,10 @@ function calculateStatistics(apps = state.rawApplications) {
       activeAppsCount++;
     }
 
-    if (status.includes('interview')) {
-      conversionCount++;
-    } else if (status === 'offered' || status === 'ready' || status === 'accepted') {
-      conversionCount++;
-    } else if (status === 'rejected') {
+    if (status === 'rejected') {
       rejectedCount++;
+    } else if (status && status !== 'ready' && status !== 'withdrawn') {
+      conversionCount++;
     }
 
     const suitabilityVal = (app['Job_Suitability'] || '').trim();
