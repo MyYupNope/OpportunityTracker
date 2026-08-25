@@ -296,6 +296,16 @@ function initTopCompaniesChart(applications, tokens) {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 8);
 
+  const containerEl = canvasEl.closest('.chart-container-small');
+  const noDataEl = document.getElementById('topCompaniesNoData');
+  if (sortedCompanies.length === 0) {
+    if (containerEl) containerEl.style.display = 'none';
+    if (noDataEl) noDataEl.style.display = '';
+    return;
+  }
+  if (containerEl) containerEl.style.display = '';
+  if (noDataEl) noDataEl.style.display = 'none';
+
   const labels = sortedCompanies.map(item => item[0]);
   const data = sortedCompanies.map(item => item[1]);
   
