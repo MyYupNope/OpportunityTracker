@@ -129,23 +129,34 @@
       },
       {
         id: 'tc-2',
-        title: 'TC-02: High Capacity (>6 MB) Quota Bypass Test',
-        desc: 'Verifies that storing a >6 MB dataset (which crashes localStorage with QuotaExceededError) executes smoothly in IndexedDB.',
+        title: 'TC-02: High Capacity (~20 MB) Quota Bypass Test',
+        desc: 'Grows a dataset until localStorage throws QuotaExceededError (~10-25 MB), then verifies IndexedDB stores and reads back that same payload without corruption.',
         run: async () => {
           const largeRow = 'Google,Staff Software Engineer,Interview Scheduled,$240,000,Candidate cleared screening\n';
-          const largeCsv = 'Company,Role,Status,Salary,Notes\n' + largeRow.repeat(70000);
-          const sizeMb = (new Blob([largeCsv]).size / (1024 * 1024)).toFixed(2);
+          const header = 'Company,Role,Status,Salary,Notes\n';
 
-          // Verify localStorage failure
+          // Grow the payload in ~5 MB steps until localStorage actually throws,
+          // so the test is deterministic regardless of the browser's exact quota.
+          let largeCsv = header;
           let lsError = null;
+          const MAX_MB = 60;
           try {
-            localStorage.setItem('__temp_quota_test__', largeCsv);
-          } catch (e) {
-            lsError = e.name;
+            while ((new Blob([largeCsv]).size / (1024 * 1024)) < MAX_MB) {
+              largeCsv += largeRow.repeat(40000);
+              try {
+                localStorage.setItem('__temp_quota_test__', largeCsv);
+              } catch (e) {
+                lsError = e.name;
+                break;
+              }
+            }
+          } finally {
+            localStorage.removeItem('__temp_quota_test__');
           }
           if (lsError !== 'QuotaExceededError') {
-            throw new Error('Expected localStorage to throw QuotaExceededError for ' + sizeMb + ' MB, got: ' + lsError);
+            throw new Error('Expected localStorage to throw QuotaExceededError at some size up to ' + MAX_MB + ' MB, got: ' + lsError);
           }
+          const sizeMb = (new Blob([largeCsv]).size / (1024 * 1024)).toFixed(2);
 
           // Test IndexedDB storage
           const start = performance.now();
@@ -162,7 +173,7 @@
           }
 
           await deleteCache('test_large_dataset');
-          return `Validated ${sizeMb} MB payload: localStorage threw QuotaExceededError (as expected), IndexedDB wrote in ${writeTime}ms and read in ${readTime}ms!`;
+          return `Validated ${sizeMb} MB payload (localStorage quota exceeded at this size): IndexedDB wrote in ${writeTime}ms and read in ${readTime}ms!`;
         }
       },
       {
@@ -227,6 +238,7 @@
           const duration = (performance.now() - start).toFixed(1);
 
           const readObj = await getCache('live_sheet_test');
+          if (!readObj || !readObj.csv) throw new Error('getCache returned null after live sheet write');
           const dec = decryptCacheData(readObj.csv);
           if (dec.length !== csvText.length) throw new Error('Decrypted live sheet size mismatch');
 
