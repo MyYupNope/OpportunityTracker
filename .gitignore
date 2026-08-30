@@ -5,3 +5,7 @@ Thumbs.db
 .env
 .env.local
 .system_generated/
+
+# Personal application data exports — never commit or publish
+*.csv
+current-database-gid-0.json
