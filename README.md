@@ -31,9 +31,10 @@ It pairs a responsive web dashboard with real-time Google Sheets CSV synchroniza
 - **Faceted Multi-Attribute Filtering**:
   - Instant faceted dropdown filtering by **Company Name**, **Job Title**, and **Application Status**.
   - Accessible keyboard navigation (Arrow keys, Enter, Escape) with real-time search.
-- **Interactive Landing Page**:
-  - Dynamic canvas particle physics network responding to theme changes.
-  - Bento grid showcase cards linking to core workspaces and the interactive resume showcase.
+- **Modernized Home Landing Page**:
+  - Interactive hero with dynamic canvas particle network and direct command action buttons (*Open Pipeline*, *View Analytics*, *Submit Opportunity*).
+  - Bento grid showcase linking directly to key sections and an interactive resume.
+  - "The Playbook" 3-step structured workflow (*Capture & Sync*, *Evaluate & Prepare*, *Track & Convert*).
 - **Direct Webhook Automation**:
   - Asynchronous webhook integration with private `n8n` automation workflows for adding new opportunities, updating notes, and triggering deletions.
 - **Dark & Light Mode**:

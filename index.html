@@ -166,6 +166,20 @@
         <div class="landing-hero-inner">
           <h1 class="landing-hero-title">Track Every Opportunity.<br><span class="accent-text">Land Your Dream Job.</span></h1>
           <p class="landing-hero-subtitle">OpportunityTracker is your end-to-end command center for managing job applications — from first click to final offer.</p>
+          <div class="alt-cta-group hero-cta-group" style="margin-top: 2.25rem;">
+            <button type="button" class="alt-btn alt-btn-primary" onclick="window.switchTab('home')">
+              <span>Open Pipeline</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+            <button type="button" class="alt-btn alt-btn-secondary" onclick="window.switchTab('dashboard')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+              <span>View Analytics</span>
+            </button>
+            <button type="button" class="alt-btn alt-btn-ghost" onclick="window.switchTab('new-application')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>Submit Opportunity</span>
+            </button>
+          </div>
         </div>
       </section>
 
@@ -296,40 +310,39 @@
         </div>
       </section>
 
-      <!-- Value Propositions -->
-      <section class="landing-value reveal">
-        <div class="value-grid">
-          <div class="value-item">
-            <div class="value-icon">
-              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="9 11 12 14 22 4"></polyline>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-              </svg>
+      <!-- 3-Step Workflow Section -->
+      <section class="alt-workflow-section reveal">
+        <div class="alt-section-intro text-center">
+          <span class="alt-section-tag">THE PLAYBOOK</span>
+          <h2 class="alt-section-title">From First Application to Final Offer</h2>
+          <p class="alt-section-subtitle">How Opportunity Tracker structures your job search for maximum conversion and zero lost leads.</p>
+        </div>
+        <div class="alt-workflow-grid">
+          <div class="alt-step-card">
+            <div class="alt-step-number">01</div>
+            <div class="alt-step-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             </div>
-            <h4 class="value-title">End-to-End Tracking</h4>
-            <p class="value-text">Manage the complete lifecycle of your applications, from submission details to interview steps and final offers.</p>
+            <h4 class="alt-step-title">Capture &amp; Sync</h4>
+            <p class="alt-step-text">Input postings with role details and salary targets. Secure webhook pipelines stream data to Google Sheets with local encrypted IndexedDB caching.</p>
           </div>
 
-          <div class="value-item">
-            <div class="value-icon">
-              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-              </svg>
+          <div class="alt-step-card">
+            <div class="alt-step-number">02</div>
+            <div class="alt-step-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
             </div>
-            <h4 class="value-title">Data-Driven Decisions</h4>
-            <p class="value-text">Track your conversion rates and suitability scores to refine your search strategy and focus on high-impact roles.</p>
+            <h4 class="alt-step-title">Evaluate &amp; Prepare</h4>
+            <p class="alt-step-text">Review automated AI suitability assessments, identify potential red flags, and export customized interview prep notes directly into Microsoft Word.</p>
           </div>
 
-          <div class="value-item">
-            <div class="value-icon">
-              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-              </svg>
+          <div class="alt-step-card">
+            <div class="alt-step-number">03</div>
+            <div class="alt-step-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
             </div>
-            <h4 class="value-title">Vibrant & Responsive</h4>
-            <p class="value-text">Enjoy a clean, lightning-fast SPA interface that adapts beautifully across desktop, tablet, and mobile browsers.</p>
+            <h4 class="alt-step-title">Track &amp; Convert</h4>
+            <p class="alt-step-text">Move candidates through visual stages with age-tinted awareness. Monitor conversion rates on the dashboard and negotiate the best offer.</p>
           </div>
         </div>
       </section>
@@ -527,7 +540,7 @@
     <!-- Main Workspace Layout -->
     <main class="main-layout">
       <!-- Filters Section -->
-      <section class="filters-section">
+      <section class="filters-section tab-hidden">
         <div class="filters-header">
           <h2>
             <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -653,7 +666,7 @@
       </section>
 
       <!-- Applications Main Section -->
-      <section class="applications-section" id="applicationsSection">
+      <section class="applications-section tab-hidden" id="applicationsSection">
         <!-- Applications Section Header -->
         <div class="results-header" id="applicationsSectionHeader">
           <h2>
