@@ -15,6 +15,11 @@
   --color-primary-light: #e8f0fe;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
+  /* Hero Animated Title & Canvas Palette */
+  --hero-gradient-1: #3b82f6;
+  --hero-gradient-2: #06b6d4;
+  --hero-gradient-3: #8b5cf6;
+
   --color-success: #1e8e3e;
   --color-error: #d93025;
   --color-warning: #b06000;
@@ -97,6 +102,12 @@
   --color-surface-hover: #303134;
   --color-primary-hover: #1765cc;
   --color-primary-light: rgba(26, 115, 232, 0.15);
+
+  /* Hero Animated Title & Canvas Palette */
+  --hero-gradient-1: #3b82f6;
+  --hero-gradient-2: #06b6d4;
+  --hero-gradient-3: #8b5cf6;
+
   --color-text-primary: #e8eaed;
   --color-text-secondary: #9aa0a6;
   --color-border: #3c4043;
@@ -3329,6 +3340,25 @@ a.topbar-nav-btn:hover svg {
   transition: background-color 0.3s;
 }
 
+/* Subtle ambient radial glow behind hero title & canvas */
+.landing-hero::before {
+  content: '';
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(680px, 90vw);
+  height: 360px;
+  background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.08) 0%, rgba(6, 182, 212, 0.05) 45%, rgba(139, 92, 246, 0.03) 70%, transparent 80%);
+  pointer-events: none;
+  z-index: 1;
+  filter: blur(45px);
+}
+
+.theme-dark .landing-hero::before {
+  background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.15) 0%, rgba(6, 182, 212, 0.09) 45%, rgba(139, 92, 246, 0.07) 70%, transparent 80%);
+}
+
 /* Canvas particle network — absolute fill behind content */
 #landingHeroCanvas {
   position: absolute;
@@ -3338,9 +3368,6 @@ a.topbar-nav-btn:hover svg {
   z-index: 0;
   pointer-events: none;
 }
-
-
-
 
 .landing-hero-inner {
   position: relative;
@@ -3371,7 +3398,7 @@ a.topbar-nav-btn:hover svg {
 
 /* Animated gradient accent text */
 .landing-hero-title .accent-text {
-  background: linear-gradient(90deg, #3b82f6, #06b6d4, #8b5cf6, #3b82f6);
+  background: linear-gradient(90deg, var(--hero-gradient-1), var(--hero-gradient-2), var(--hero-gradient-3), var(--hero-gradient-1));
   background-size: 300% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -3380,14 +3407,13 @@ a.topbar-nav-btn:hover svg {
   text-shadow: none; /* text-shadow doesn't work with bg-clip, glow is handled via filter */
 }
 
-/* Glow effect behind gradient text via a duplicated pseudo-element is complex;
-   instead we add a subtle drop-shadow filter on the title for depth */
+/* Glow effect behind gradient text via a subtle drop-shadow filter on the title for depth */
 .landing-hero-title {
-  filter: drop-shadow(0 0 25px rgba(59, 130, 246, 0.08));
+  filter: drop-shadow(0 0 25px rgba(59, 130, 246, 0.1));
 }
 
 .theme-dark .landing-hero-title {
-  filter: drop-shadow(0 0 30px rgba(96, 165, 250, 0.15));
+  filter: drop-shadow(0 0 30px rgba(96, 165, 250, 0.2));
 }
 
 @keyframes gradientShift {

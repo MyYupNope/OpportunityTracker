@@ -47,7 +47,7 @@ class LandingParticles {
     this.particles = [];
     this.animationFrameId = null;
     this.isActive = false;
-    this._cachedColor = null;
+    this._cachedPalette = null;
     this._lastThemeClass = '';
     this.handleResize = this._onResize.bind(this);
   }
@@ -108,24 +108,68 @@ class LandingParticles {
     else this._resizeTimeout = setTimeout(doResize, 150);
   }
 
-  _getColorRgb() {
+  _parseHexColor(colorStr, fallback) {
+    if (!colorStr) return fallback;
     try {
-      const style = getComputedStyle(document.documentElement);
-      let color = style.getPropertyValue('--color-primary').trim();
+      let color = colorStr.trim();
       if (color.startsWith('#')) {
         let hex = color.substring(1);
-        if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
-        return {
-          r: parseInt(hex.substring(0, 2), 16),
-          g: parseInt(hex.substring(2, 4), 16),
-          b: parseInt(hex.substring(4, 6), 16)
-        };
+        if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        if (hex.length === 6) {
+          return {
+            r: parseInt(hex.substring(0, 2), 16),
+            g: parseInt(hex.substring(2, 4), 16),
+            b: parseInt(hex.substring(4, 6), 16)
+          };
+        }
       }
     } catch (e) { /* fallback */ }
-    return { r: 59, g: 130, b: 246 }; // Default blue fallback
+    return fallback;
   }
 
-  _animate() {
+  _getPalette() {
+    try {
+      const style = getComputedStyle(document.documentElement);
+      const c1 = this._parseHexColor(style.getPropertyValue('--hero-gradient-1'), { r: 59, g: 130, b: 246 });
+      const c2 = this._parseHexColor(style.getPropertyValue('--hero-gradient-2'), { r: 6, g: 182, b: 212 });
+      const c3 = this._parseHexColor(style.getPropertyValue('--hero-gradient-3'), { r: 139, g: 92, b: 246 });
+      return [c1, c2, c3];
+    } catch (e) {
+      return [
+        { r: 59, g: 130, b: 246 },
+        { r: 6, g: 182, b: 212 },
+        { r: 139, g: 92, b: 246 }
+      ];
+    }
+  }
+
+  _getCurrentColor(now) {
+    const palette = this._cachedPalette || this._getPalette();
+    const c1 = palette[0];
+    const c2 = palette[1];
+    const c3 = palette[2];
+
+    // 6-second cycle matching title gradientShift (6s ease-in-out infinite)
+    const progress = (now % 6000) / 6000;
+    // Cosine ease-in-out curve oscillating smoothly between 0 and 1
+    const ease = 0.5 - 0.5 * Math.cos(progress * Math.PI * 2);
+
+    let r, g, b;
+    if (ease <= 0.5) {
+      const factor = ease * 2;
+      r = Math.round(c1.r + (c2.r - c1.r) * factor);
+      g = Math.round(c1.g + (c2.g - c1.g) * factor);
+      b = Math.round(c1.b + (c2.b - c1.b) * factor);
+    } else {
+      const factor = (ease - 0.5) * 2;
+      r = Math.round(c2.r + (c3.r - c2.r) * factor);
+      g = Math.round(c2.g + (c3.g - c2.g) * factor);
+      b = Math.round(c2.b + (c3.b - c2.b) * factor);
+    }
+    return { r, g, b };
+  }
+
+  _animate(now = performance.now()) {
     if (!this.isActive) return;
     const dpr = window.devicePixelRatio || 1;
     const width = this.canvas.width / dpr;
@@ -133,11 +177,11 @@ class LandingParticles {
     this.ctx.clearRect(0, 0, width, height);
 
     const themeClass = document.documentElement.className;
-    if (this._lastThemeClass !== themeClass || !this._cachedColor) {
+    if (this._lastThemeClass !== themeClass || !this._cachedPalette) {
       this._lastThemeClass = themeClass;
-      this._cachedColor = this._getColorRgb();
+      this._cachedPalette = this._getPalette();
     }
-    const c = this._cachedColor;
+    const c = this._getCurrentColor(now);
 
     // Update and draw particles
     this.particles.forEach(p => {
@@ -147,7 +191,7 @@ class LandingParticles {
       if (p.y < 0 || p.y > height) p.vy *= -1;
       this.ctx.beginPath();
       this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-      this.ctx.fillStyle = `rgba(${c.r}, ${c.g}, ${c.b}, 0.55)`;
+      this.ctx.fillStyle = `rgba(${c.r}, ${c.g}, ${c.b}, 0.65)`;
       this.ctx.fill();
     });
 
@@ -163,7 +207,7 @@ class LandingParticles {
         const distSq = dx * dx + dy * dy;
         if (distSq < maxDistSq) {
           const dist = Math.sqrt(distSq);
-          const alpha = (1 - dist / maxDist) * 0.25;
+          const alpha = (1 - dist / maxDist) * 0.28;
           this.ctx.beginPath();
           this.ctx.moveTo(p1.x, p1.y);
           this.ctx.lineTo(p2.x, p2.y);
@@ -174,7 +218,7 @@ class LandingParticles {
       }
     }
 
-    this.animationFrameId = requestAnimationFrame(() => this._animate());
+    this.animationFrameId = requestAnimationFrame(ts => this._animate(ts));
   }
 }
 
