@@ -1301,7 +1301,7 @@ function applyFilters(skipRender = false) {
   }
 }
 
-const AGE_TINT_CLASSES = ['age-green', 'age-amber', 'age-red'];
+const CARD_COLOR_CLASSES = ['age-green', 'age-amber', 'age-red', 'status-card-offer', 'status-card-accepted'];
 
 function computeApplicationAge(parsedDate, now = new Date()) {
   if (!parsedDate) return null;
@@ -1319,9 +1319,24 @@ function computeApplicationAge(parsedDate, now = new Date()) {
 
 function syncCardAgeTint(cardEl, app, colKey) {
   if (!cardEl) return;
-  AGE_TINT_CLASSES.forEach(cls => cardEl.classList.remove(cls));
+  CARD_COLOR_CLASSES.forEach(cls => cardEl.classList.remove(cls));
   cardEl.removeAttribute('title');
-  if (colKey === 'Rejected' || !app) return;
+  if (!app) return;
+
+  if (colKey === 'Offered') {
+    const s = (app['Application Status'] || '').trim().toLowerCase();
+    if (s === 'accepted' || s === 'accept') {
+      cardEl.classList.add('status-card-accepted');
+      cardEl.title = 'Status: Accepted';
+    } else {
+      cardEl.classList.add('status-card-offer');
+      cardEl.title = 'Status: Offer';
+    }
+    return;
+  }
+
+  if (colKey === 'Rejected') return;
+
   const ageInfo = computeApplicationAge(app._parsedDate || parseDate((app['Create Date'] || '').trim()));
   if (ageInfo) {
     cardEl.classList.add(`age-${ageInfo.level}`);
@@ -1639,6 +1654,8 @@ async function updateApplicationStatusDirect(app, newStatus, targetContainer, ca
     if (sourceContainer) updateColumnEmptyState(sourceContainer);
     updateColumnHeaderCount(oldColKey, -1);
     updateColumnHeaderCount(newColKey, 1);
+  } else if (cardEl) {
+    syncCardAgeTint(cardEl, app, newColKey);
   }
 
   // 2. Generate submit update payload
@@ -1670,6 +1687,8 @@ async function updateApplicationStatusDirect(app, newStatus, targetContainer, ca
       if (targetContainer) updateColumnEmptyState(targetContainer);
       updateColumnHeaderCount(oldColKey, 1);
       updateColumnHeaderCount(newColKey, -1);
+    } else if (cardEl) {
+      syncCardAgeTint(cardEl, app, oldColKey);
     }
 
     const isTimeout = err && (err.name === 'AbortError' || (err.message && err.message.toLowerCase().includes('timed out')));

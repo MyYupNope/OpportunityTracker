@@ -94,6 +94,10 @@
   --age-tint-green: #e6f4ea;
   --age-tint-amber: #fef7e0;
   --age-tint-red: #fce8e6;
+
+  /* Kanban card status tints (Light Theme) */
+  --card-status-offer: #f1f3f4;
+  --card-status-accepted: #e8f0fe;
 }
 
 :root.theme-dark {
@@ -158,6 +162,10 @@
   --age-tint-green: rgba(126, 203, 147, 0.18);
   --age-tint-amber: rgba(249, 171, 0, 0.25);
   --age-tint-red: rgba(217, 48, 37, 0.32);
+
+  /* Kanban card status tints (Dark Theme) */
+  --card-status-offer: rgba(255, 255, 255, 0.08);
+  --card-status-accepted: rgba(138, 180, 248, 0.18);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -4653,6 +4661,14 @@ a.topbar-nav-btn:hover svg {
 
 .kanban-card.age-red {
   background: var(--age-tint-red);
+}
+
+.kanban-card.status-card-offer {
+  background: var(--card-status-offer);
+}
+
+.kanban-card.status-card-accepted {
+  background: var(--card-status-accepted);
 }
 
 .kanban-card.dragging {

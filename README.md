@@ -14,7 +14,8 @@ It pairs a responsive web dashboard with real-time Google Sheets CSV synchroniza
 - **Interactive Kanban Board**:
   - 5 dynamic pipeline stages (*Ready*, *Applied*, *Interviewed*, *Offered/Accepted*, *Rejected/Withdrawn*).
   - Drag-and-drop status transitions with optimistic UI updates and automatic rollback on network failure.
-  - Age-based card background tints (green < 15d, amber < 30d, red ≥ 30d since application date) to surface stale pipeline items at a glance; terminal *Rejected/Withdrawn* cards stay neutral.
+  - Age-based card background tints (green < 15d, amber < 30d, red ≥ 30d since application date) to surface stale pipeline items in active stages (*Ready*, *Applied*, *Interviewed*).
+  - Status-specific card coloring for the *Offered / Accepted* stage (Offer: light grey, Accepted: light blue) aligned with the system's Google Material pastel palette; terminal *Rejected/Withdrawn* cards stay neutral.
   - Single-click deletion requests with confirmation guards for unsent/draft applications.
 - **Real-Time Data Synchronization**:
   - Direct HTTP streaming and client-side CSV parsing of Google Sheets records.
@@ -66,6 +67,7 @@ OpportunityTracker/
 │   └── Utils.js             # Formatting, sanitization, encryption, & DOM helpers
 ├── tests/
 │   ├── index.html           # In-browser interactive test suite runner
+│   ├── test-card-colors.mjs # Headless automated test suite for status & age card colors
 │   └── test-storage-node.mjs# Headless Node.js storage & quota test suite
 ├── index.html               # Main Single Page Application entrypoint
 ├── package.json             # NPM package scripts & configuration
